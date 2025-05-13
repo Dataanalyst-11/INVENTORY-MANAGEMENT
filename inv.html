@@ -114,9 +114,9 @@
   <!-- SCRIPT SECTION -->
   <script>
     $(document).ready(function () {
-      let users = [];
-      let inventory = [];
-      let dispatchRequests = [];
+      let users = JSON.parse(localStorage.getItem('users')) || [];
+      let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+      let dispatchRequests = JSON.parse(localStorage.getItem('dispatchRequests')) || [];
 
       function refreshInventoryTables() {
         const invHTML = inventory.map(i =>
@@ -208,6 +208,7 @@
             return $('#auth-status').text('Only one admin account is allowed');
           }
           users.push({ username, password, role });
+          localStorage.setItem('users', JSON.stringify(users));
           loginUser(role);
         } else {
           const user = users.find(u => u.username === username && u.password === password);
@@ -232,6 +233,7 @@
         } else {
           inventory.push({ id, name, qty, lastUpdated: date });
         }
+        localStorage.setItem('inventory', JSON.stringify(inventory));
         refreshInventoryTables();
       });
 
@@ -252,67 +254,45 @@
           status: 'Pending',
           date
         });
+        localStorage.setItem('dispatchRequests', JSON.stringify(dispatchRequests));
         refreshDispatchTables();
       });
 
       $('#approve-btn').click(() => {
         $('.approve-select:checked').each(function () {
           const id = $(this).val();
-          const req = dispatchRequests.find(r => r.id == id);
-          const invItem = inventory.find(i => i.name === req.item);
-          if (invItem.qty >= req.qty) {
-            req.status = 'Approved';
-            invItem.qty -= req.qty;
-            invItem.lastUpdated = new Date().toLocaleString();
-          }
+          const dispatch = dispatchRequests.find(d => d.id === parseInt(id));
+          dispatch.status = 'Approved';
         });
-        refreshInventoryTables();
+        localStorage.setItem('dispatchRequests', JSON.stringify(dispatchRequests));
         refreshDispatchTables();
       });
 
       $('#reject-btn').click(() => {
         $('.approve-select:checked').each(function () {
           const id = $(this).val();
-          const req = dispatchRequests.find(r => r.id == id);
-          req.status = 'Rejected';
+          const dispatch = dispatchRequests.find(d => d.id === parseInt(id));
+          dispatch.status = 'Rejected';
         });
+        localStorage.setItem('dispatchRequests', JSON.stringify(dispatchRequests));
         refreshDispatchTables();
       });
 
       $('#save-users-btn').click(() => {
-        let valid = true;
-        const updatedUsers = [];
-        $('#admin-user-table tbody tr').each(function () {
+        const tbody = $('#admin-user-table tbody');
+        tbody.find('tr').each(function () {
           const index = $(this).find('.user-email').data('index');
-          const email = $(this).find('.user-email').val().trim();
-          const password = $(this).find('.user-password').val();
-          const role = $(this).find('.user-role').val();
-
-          if (!email || !password || !role) {
-            valid = false;
-            return false;
-          }
-          updatedUsers.push({ username: email, password, role });
+          users[index].username = $(this).find('.user-email').val();
+          users[index].password = $(this).find('.user-password').val();
+          users[index].role = $(this).find('.user-role').val();
         });
-
-        if (!valid) {
-          alert('All fields are required for all users.');
-          return;
-        }
-
-        const adminCount = updatedUsers.filter(u => u.role === 'admin').length;
-        if (adminCount > 1) {
-          alert('Only one admin account is allowed.');
-          return;
-        }
-
-        users = updatedUsers;
-        alert('User data saved successfully.');
+        localStorage.setItem('users', JSON.stringify(users));
       });
 
       $('#admin-user-table').on('click', '.delete-user', function () {
         const index = $(this).data('index');
         users.splice(index, 1);
+        localStorage.setItem('users', JSON.stringify(users));
         refreshAdminUserTable();
       });
     });
