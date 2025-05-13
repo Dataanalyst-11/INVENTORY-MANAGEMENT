@@ -54,6 +54,8 @@
         <h3>Request Dispatch</h3>
         <select id="dispatch-item" class="form-select my-2"></select>
         <input type="number" id="dispatch-qty" class="form-control my-2" placeholder="Quantity to Dispatch" min="1" value="1">
+        <input type="text" id="dispatch-branch" class="form-control my-2" placeholder="Branch">
+        <input type="text" id="dispatch-person" class="form-control my-2" placeholder="Person Requesting Dispatch">
         <button id="request-dispatch" class="btn btn-warning">Request Dispatch</button>
 
         <h4 class="mt-4">Inventory Balance</h4>
@@ -95,21 +97,30 @@
       let dispatchRequests = [];
 
       function refreshInventoryTables() {
-        const invHTML = inventory.map(i => `<tr><td>${i.id}</td><td>${i.name}</td><td>${i.qty}</td><td>${i.lastUpdated || ''}</td></tr>`).join("");
-        $('#inventory-table, #dispatcher-inventory, #manager-inventory').html(`<thead><tr><th>ID</th><th>Name</th><th>Quantity</th><th>Last Updated</th></tr></thead><tbody>${invHTML}</tbody>`);
+        const invHTML = inventory.map(i =>
+          `<tr><td>${i.id}</td><td>${i.name}</td><td>${i.qty}</td><td>${i.lastUpdated || ''}</td></tr>`).join("");
+        const tableHeader = `<thead><tr><th>ID</th><th>Name</th><th>Quantity</th><th>Last Updated</th></tr></thead>`;
+        $('#inventory-table, #dispatcher-inventory, #manager-inventory').html(`${tableHeader}<tbody>${invHTML}</tbody>`);
 
-        const dropdownHTML = inventory.map(i => `<option value="${i.id}">${i.name} (${i.qty})</option>`).join("");
+        const dropdownHTML = inventory.map(i =>
+          `<option value="${i.id}">${i.name} (${i.qty})</option>`).join("");
         $('#dispatch-item').html(dropdownHTML);
       }
 
       function refreshDispatchTables() {
-        const pendingHTML = dispatchRequests.filter(d => d.status === 'Pending').map(d => `<tr><td><input type="checkbox" class="approve-select" value="${d.id}"></td><td>${d.item}</td><td>${d.qty}</td><td>${d.date}</td></tr>`).join("");
-        const approvedHTML = dispatchRequests.filter(d => d.status === 'Approved').map(d => `<tr><td>${d.item}</td><td>${d.qty}</td><td>${d.date}</td></tr>`).join("");
-        const rejectedHTML = dispatchRequests.filter(d => d.status === 'Rejected').map(d => `<tr><td>${d.item}</td><td>${d.qty}</td><td>${d.date}</td></tr>`).join("");
+        const pendingHTML = dispatchRequests.filter(d => d.status === 'Pending').map(d =>
+          `<tr><td><input type="checkbox" class="approve-select" value="${d.id}"></td><td>${d.item}</td><td>${d.qty}</td><td>${d.branch}</td><td>${d.person}</td><td>${d.date}</td></tr>`).join("");
+        const approvedHTML = dispatchRequests.filter(d => d.status === 'Approved').map(d =>
+          `<tr><td>${d.item}</td><td>${d.qty}</td><td>${d.branch}</td><td>${d.person}</td><td>${d.date}</td></tr>`).join("");
+        const rejectedHTML = dispatchRequests.filter(d => d.status === 'Rejected').map(d =>
+          `<tr><td>${d.item}</td><td>${d.qty}</td><td>${d.branch}</td><td>${d.person}</td><td>${d.date}</td></tr>`).join("");
 
-        $('#pending-dispatch, #approve-table').html(`<thead><tr><th>Select</th><th>Item</th><th>Quantity</th><th>Date</th></tr></thead><tbody>${pendingHTML}</tbody>`);
-        $('#approved-dispatch, #approved-dispatch-mgr').html(`<thead><tr><th>Item</th><th>Quantity</th><th>Date</th></tr></thead><tbody>${approvedHTML}</tbody>`);
-        $('#rejected-dispatch, #rejected-dispatch-mgr').html(`<thead><tr><th>Item</th><th>Quantity</th><th>Date</th></tr></thead><tbody>${rejectedHTML}</tbody>`);
+        const pendingHeader = `<thead><tr><th>Select</th><th>Item</th><th>Quantity</th><th>Branch</th><th>Person</th><th>Date</th></tr></thead>`;
+        const otherHeader = `<thead><tr><th>Item</th><th>Quantity</th><th>Branch</th><th>Person</th><th>Date</th></tr></thead>`;
+
+        $('#pending-dispatch, #approve-table').html(`${pendingHeader}<tbody>${pendingHTML}</tbody>`);
+        $('#approved-dispatch, #approved-dispatch-mgr').html(`${otherHeader}<tbody>${approvedHTML}</tbody>`);
+        $('#rejected-dispatch, #rejected-dispatch-mgr').html(`${otherHeader}<tbody>${rejectedHTML}</tbody>`);
       }
 
       $("input[name='authMode']").change(() => $('#signup-fields').toggle($('#signUp').is(':checked')));
@@ -165,11 +176,22 @@
       });
 
       $('#request-dispatch').click(() => {
-        const itemId = $('#dispatch-item').val(), qty = parseInt($('#dispatch-qty').val());
+        const itemId = $('#dispatch-item').val();
+        const qty = parseInt($('#dispatch-qty').val());
+        const branch = $('#dispatch-branch').val();
+        const person = $('#dispatch-person').val();
         const item = inventory.find(i => i.id === itemId);
-        if (!item || qty <= 0 || qty > item.qty) return;
+        if (!item || qty <= 0 || qty > item.qty || !branch || !person) return;
         const date = new Date().toLocaleString();
-        dispatchRequests.push({ id: Date.now(), item: item.name, qty, status: 'Pending', date });
+        dispatchRequests.push({
+          id: Date.now(),
+          item: item.name,
+          qty,
+          branch,
+          person,
+          status: 'Pending',
+          date
+        });
         refreshDispatchTables();
       });
 
