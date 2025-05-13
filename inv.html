@@ -31,82 +31,173 @@
         <label class="form-check-label" for="signUp">Sign Up</label>
       </div>
       <button id="auth-btn" class="btn btn-primary mt-3">Submit</button>
-      <button id="forgot-password" class="btn btn-link">Forgot Password?</button>
-      <button id="reset-password" class="btn btn-secondary mt-2">Reset Password</button>
       <div id="auth-status" class="text-danger mt-2"></div>
     </div>
 
     <div id="main-section" style="display:none;">
       <button id="logout-btn" class="btn btn-danger mb-3">Logout</button>
 
-      <div id="cumulative-summary" class="mb-4">
-        <h3>Cumulative Summary</h3>
-        <table class="table table-bordered">
-          <thead>
-            <tr><th>Type</th><th>Count</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Total Received Items</td><td id="cumulative-received">0</td></tr>
-            <tr><td>Total Approved Dispatches</td><td id="cumulative-approved">0</td></tr>
-            <tr><td>Total Rejected Dispatches</td><td id="cumulative-rejected">0</td></tr>
-          </tbody>
-        </table>
+      <!-- Receive Section -->
+      <div id="receive-section" style="display:none;">
+        <h3>Receive Items</h3>
+        <input type="text" id="recv-id" class="form-control my-2" placeholder="Item ID">
+        <input type="text" id="recv-name" class="form-control my-2" placeholder="Item Description">
+        <input type="number" id="recv-qty" class="form-control my-2" placeholder="Quantity" min="1" value="1">
+        <button id="recv-btn" class="btn btn-success">Receive Item</button>
+
+        <h4 class="mt-4">Inventory Balance</h4>
+        <table class="table table-bordered" id="inventory-table"></table>
       </div>
 
-      <div id="daily-summary" class="mb-4">
-        <h3>Daily Summary</h3>
-        <table class="table table-bordered">
-          <thead>
-            <tr><th>Date</th><th>Received</th><th>Approved</th><th>Rejected</th></tr>
-          </thead>
-          <tbody id="daily-summary-body"></tbody>
-        </table>
-      </div>
-
-      <div id="admin-section" style="display:none;">
-        <h3>Admin Portal</h3>
-        <table class="table table-bordered">
-          <thead><tr><th>Email</th><th>Password</th><th>Role</th><th>Actions</th></tr></thead>
-          <tbody id="admin-users-body"></tbody>
-        </table>
-      </div>
-
+      <!-- Dispatch Section -->
       <div id="dispatch-section" style="display:none;">
-        <h3>Dispatch Portal</h3>
-        <div class="mb-4">
-          <h4>Inventory Balance</h4>
-          <table class="table table-bordered">
-            <thead><tr><th>Item</th><th>Quantity</th></tr></thead>
-            <tbody id="inventory-balance-body"></tbody>
-          </table>
-        </div>
-        <div class="mb-4">
-          <h4>Pending Approval Requests</h4>
-          <table class="table table-bordered">
-            <thead><tr><th>Request ID</th><th>Item</th><th>Quantity</th><th>Actions</th></tr></thead>
-            <tbody id="pending-requests-body"></tbody>
-          </table>
-        </div>
-        <div class="mb-4">
-          <h4>Approved Dispatches</h4>
-          <table class="table table-bordered">
-            <thead><tr><th>Request ID</th><th>Item</th><th>Quantity</th></tr></thead>
-            <tbody id="approved-requests-body"></tbody>
-          </table>
-        </div>
-        <div class="mb-4">
-          <h4>Rejected Dispatches</h4>
-          <table class="table table-bordered">
-            <thead><tr><th>Request ID</th><th>Item</th><th>Quantity</th></tr></thead>
-            <tbody id="rejected-requests-body"></tbody>
-          </table>
-        </div>
+        <h3>Request Dispatch</h3>
+        <select id="dispatch-item" class="form-select my-2"></select>
+        <input type="number" id="dispatch-qty" class="form-control my-2" placeholder="Quantity to Dispatch" min="1" value="1">
+        <button id="request-dispatch" class="btn btn-warning">Request Dispatch</button>
+
+        <h4 class="mt-4">Inventory Balance</h4>
+        <table class="table table-bordered" id="dispatcher-inventory"></table>
+
+        <h4 class="mt-4">Pending Dispatch Requests</h4>
+        <table class="table table-bordered" id="pending-dispatch"></table>
+
+        <h4 class="mt-4">Approved Dispatches</h4>
+        <table class="table table-bordered" id="approved-dispatch"></table>
+
+        <h4 class="mt-4">Rejected Dispatches</h4>
+        <table class="table table-bordered" id="rejected-dispatch"></table>
+      </div>
+
+      <!-- Manager Section -->
+      <div id="manager-section" style="display:none;">
+        <h3>Manager Approval</h3>
+        <table class="table table-bordered" id="approve-table"></table>
+        <button id="approve-btn" class="btn btn-success me-2">Approve Selected</button>
+        <button id="reject-btn" class="btn btn-danger">Reject Selected</button>
+
+        <h4 class="mt-4">Inventory Balance</h4>
+        <table class="table table-bordered" id="manager-inventory"></table>
+
+        <h4 class="mt-4">Approved Dispatches</h4>
+        <table class="table table-bordered" id="approved-dispatch-mgr"></table>
+
+        <h4 class="mt-4">Rejected Dispatches</h4>
+        <table class="table table-bordered" id="rejected-dispatch-mgr"></table>
       </div>
     </div>
   </div>
 
   <script>
-    // Full updated JS from previous reply goes here (refreshed functions for Inventory Balance, Dispatch Requests, Approvals, Rejections, Summaries...)
+    $(document).ready(function () {
+      let users = [];
+      let inventory = [];
+      let dispatchRequests = [];
+
+      function refreshInventoryTables() {
+        const invHTML = inventory.map(i => `<tr><td>${i.id}</td><td>${i.name}</td><td>${i.qty}</td><td>${i.lastUpdated || ''}</td></tr>`).join("");
+        $('#inventory-table, #dispatcher-inventory, #manager-inventory').html(`<thead><tr><th>ID</th><th>Name</th><th>Quantity</th><th>Last Updated</th></tr></thead><tbody>${invHTML}</tbody>`);
+
+        const dropdownHTML = inventory.map(i => `<option value="${i.id}">${i.name} (${i.qty})</option>`).join("");
+        $('#dispatch-item').html(dropdownHTML);
+      }
+
+      function refreshDispatchTables() {
+        const pendingHTML = dispatchRequests.filter(d => d.status === 'Pending').map(d => `<tr><td><input type="checkbox" class="approve-select" value="${d.id}"></td><td>${d.item}</td><td>${d.qty}</td><td>${d.date}</td></tr>`).join("");
+        const approvedHTML = dispatchRequests.filter(d => d.status === 'Approved').map(d => `<tr><td>${d.item}</td><td>${d.qty}</td><td>${d.date}</td></tr>`).join("");
+        const rejectedHTML = dispatchRequests.filter(d => d.status === 'Rejected').map(d => `<tr><td>${d.item}</td><td>${d.qty}</td><td>${d.date}</td></tr>`).join("");
+
+        $('#pending-dispatch, #approve-table').html(`<thead><tr><th>Select</th><th>Item</th><th>Quantity</th><th>Date</th></tr></thead><tbody>${pendingHTML}</tbody>`);
+        $('#approved-dispatch, #approved-dispatch-mgr').html(`<thead><tr><th>Item</th><th>Quantity</th><th>Date</th></tr></thead><tbody>${approvedHTML}</tbody>`);
+        $('#rejected-dispatch, #rejected-dispatch-mgr').html(`<thead><tr><th>Item</th><th>Quantity</th><th>Date</th></tr></thead><tbody>${rejectedHTML}</tbody>`);
+      }
+
+      $("input[name='authMode']").change(() => $('#signup-fields').toggle($('#signUp').is(':checked')));
+
+      $('#auth-btn').click(function () {
+        const mode = $('input[name="authMode"]:checked').val();
+        const username = $('#username').val();
+        const password = $('#password').val();
+
+        if (!username || !password) return $('#auth-status').text('Fill all fields');
+
+        if (mode === 'Sign Up') {
+          const role = $('#role').val();
+          if (!role) return $('#auth-status').text('Select a role');
+          if (users.find(u => u.username === username)) return $('#auth-status').text('Username exists');
+          users.push({ username, password, role });
+          loginUser(role);
+        } else {
+          const user = users.find(u => u.username === username && u.password === password);
+          if (!user) return $('#auth-status').text('Invalid credentials');
+          loginUser(user.role);
+        }
+      });
+
+      $('#logout-btn').click(() => {
+        $('#main-section').hide();
+        $('#auth-section').show();
+      });
+
+      function loginUser(role) {
+        $('#auth-section').hide();
+        $('#main-section').show();
+        $('#receive-section, #dispatch-section, #manager-section').hide();
+        if (role === 'receive') $('#receive-section').show();
+        if (role === 'dispatch') $('#dispatch-section').show();
+        if (role === 'manager') $('#manager-section').show();
+        refreshInventoryTables();
+        refreshDispatchTables();
+      }
+
+      $('#recv-btn').click(() => {
+        const id = $('#recv-id').val(), name = $('#recv-name').val(), qty = parseInt($('#recv-qty').val());
+        if (!id || !name || qty <= 0) return;
+        const date = new Date().toLocaleString();
+        const item = inventory.find(i => i.id === id);
+        if (item) {
+          item.qty += qty;
+          item.lastUpdated = date;
+        } else {
+          inventory.push({ id, name, qty, lastUpdated: date });
+        }
+        refreshInventoryTables();
+      });
+
+      $('#request-dispatch').click(() => {
+        const itemId = $('#dispatch-item').val(), qty = parseInt($('#dispatch-qty').val());
+        const item = inventory.find(i => i.id === itemId);
+        if (!item || qty <= 0 || qty > item.qty) return;
+        const date = new Date().toLocaleString();
+        dispatchRequests.push({ id: Date.now(), item: item.name, qty, status: 'Pending', date });
+        refreshDispatchTables();
+      });
+
+      $('#approve-btn').click(() => {
+        $('.approve-select:checked').each(function () {
+          const id = $(this).val();
+          const req = dispatchRequests.find(r => r.id == id);
+          const invItem = inventory.find(i => i.name === req.item);
+          if (invItem.qty >= req.qty) {
+            req.status = 'Approved';
+            invItem.qty -= req.qty;
+            invItem.lastUpdated = new Date().toLocaleString();
+          }
+        });
+        refreshInventoryTables();
+        refreshDispatchTables();
+      });
+
+      $('#reject-btn').click(() => {
+        $('.approve-select:checked').each(function () {
+          const id = $(this).val();
+          const req = dispatchRequests.find(r => r.id == id);
+          req.status = 'Rejected';
+        });
+        refreshDispatchTables();
+      });
+    });
   </script>
 </body>
+
 </html>
