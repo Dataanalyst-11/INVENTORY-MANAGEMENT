@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Inventory Management App</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
-
 <body>
-  <div class="container py-5">
-    <h1>Inventory Management</h1>
+  <div class="container py-4">
+    <h1 class="mb-4">Inventory Management</h1>
 
-    <!-- Authentication Section -->
+    <!-- Auth Section -->
     <div id="auth-section">
-      <h3>Login / Sign Up</h3>
-      <input type="email" id="username" class="form-control my-2" placeholder="Username (Email)" />
-      <input type="password" id="password" class="form-control my-2" placeholder="Password" />
+      <h4>Login / Sign Up</h4>
+      <input type="email" id="username" class="form-control my-2" placeholder="Email">
+      <input type="password" id="password" class="form-control my-2" placeholder="Password">
       <div id="signup-fields" style="display: none;">
         <select id="role" class="form-select my-2">
           <option value="receive">Receive</option>
@@ -27,9 +26,9 @@
         </select>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="authMode" id="signIn" value="Sign In" checked />
+        <input class="form-check-input" type="radio" name="authMode" id="signIn" value="Sign In" checked>
         <label class="form-check-label" for="signIn">Sign In</label>
-        <input class="form-check-input ms-3" type="radio" name="authMode" id="signUp" value="Sign Up" />
+        <input class="form-check-input ms-3" type="radio" name="authMode" id="signUp" value="Sign Up">
         <label class="form-check-label" for="signUp">Sign Up</label>
       </div>
       <button id="auth-btn" class="btn btn-primary mt-3">Submit</button>
@@ -40,69 +39,64 @@
     <div id="main-section" style="display: none;">
       <button id="logout-btn" class="btn btn-danger mb-3">Logout</button>
 
-      <!-- Receive Section -->
-      <div id="receive-section" style="display: none;">
-        <h3>Receive Items</h3>
-        <input type="text" id="recv-id" class="form-control my-2" placeholder="Item ID" />
-        <input type="text" id="recv-name" class="form-control my-2" placeholder="Item Description" />
-        <input type="number" id="recv-qty" class="form-control my-2" placeholder="Quantity" min="1" value="1" />
-        <button id="recv-btn" class="btn btn-success">Receive Item</button>
-
-        <h4 class="mt-4">Inventory Balance</h4>
+      <!-- Receive -->
+      <div id="receive-section" style="display:none;">
+        <h4>Receive Items</h4>
+        <input type="text" id="recv-id" class="form-control my-2" placeholder="Item ID">
+        <input type="text" id="recv-name" class="form-control my-2" placeholder="Item Name">
+        <input type="number" id="recv-qty" class="form-control my-2" placeholder="Quantity" min="1" value="1">
+        <button id="recv-btn" class="btn btn-success mb-3">Receive Item</button>
+        <button class="btn btn-outline-primary mb-3" onclick="exportTableToExcel('inventory-table')">Export Inventory</button>
         <table class="table table-bordered" id="inventory-table"></table>
       </div>
 
-      <!-- Dispatch Section -->
-      <div id="dispatch-section" style="display: none;">
-        <h3>Request Dispatch</h3>
+      <!-- Dispatch -->
+      <div id="dispatch-section" style="display:none;">
+        <h4>Dispatch Items</h4>
         <select id="dispatch-item" class="form-select my-2"></select>
-        <input type="number" id="dispatch-qty" class="form-control my-2" placeholder="Quantity to Dispatch" min="1"
-          value="1" />
-        <input type="text" id="dispatch-branch" class="form-control my-2" placeholder="Branch" />
-        <input type="text" id="dispatch-person" class="form-control my-2" placeholder="Person Requesting Dispatch" />
-        <button id="request-dispatch" class="btn btn-warning">Request Dispatch</button>
+        <input type="number" id="dispatch-qty" class="form-control my-2" placeholder="Quantity" min="1" value="1">
+        <input type="text" id="dispatch-branch" class="form-control my-2" placeholder="Branch">
+        <input type="text" id="dispatch-person" class="form-control my-2" placeholder="Person Requesting">
+        <button id="request-dispatch" class="btn btn-warning mb-3">Request Dispatch</button>
 
-        <h4 class="mt-4">Inventory Balance</h4>
+        <button class="btn btn-outline-primary mb-2" onclick="exportTableToExcel('dispatcher-inventory')">Export Inventory</button>
         <table class="table table-bordered" id="dispatcher-inventory"></table>
 
-        <h4 class="mt-4">Pending Dispatch Requests</h4>
+        <h5>Pending Requests</h5>
+        <button class="btn btn-outline-primary mb-2" onclick="exportTableToExcel('pending-dispatch')">Export Pending</button>
         <table class="table table-bordered" id="pending-dispatch"></table>
 
-        <h4 class="mt-4">Approved Dispatches</h4>
+        <h5>Approved Dispatches</h5>
         <table class="table table-bordered" id="approved-dispatch"></table>
 
-        <h4 class="mt-4">Rejected Dispatches</h4>
+        <h5>Rejected Dispatches</h5>
         <table class="table table-bordered" id="rejected-dispatch"></table>
       </div>
 
-      <!-- Manager Section -->
-      <div id="manager-section" style="display: none;">
-        <h3>Manager Approval</h3>
+      <!-- Manager -->
+      <div id="manager-section" style="display:none;">
+        <h4>Manager Approval</h4>
+        <button id="approve-btn" class="btn btn-success me-2">Approve</button>
+        <button id="reject-btn" class="btn btn-danger">Reject</button>
         <table class="table table-bordered" id="approve-table"></table>
-        <button id="approve-btn" class="btn btn-success me-2">Approve Selected</button>
-        <button id="reject-btn" class="btn btn-danger">Reject Selected</button>
 
-        <h4 class="mt-4">Inventory Balance</h4>
+        <h5>Inventory</h5>
         <table class="table table-bordered" id="manager-inventory"></table>
 
-        <h4 class="mt-4">Approved Dispatches</h4>
+        <h5>Approved</h5>
         <table class="table table-bordered" id="approved-dispatch-mgr"></table>
 
-        <h4 class="mt-4">Rejected Dispatches</h4>
+        <h5>Rejected</h5>
         <table class="table table-bordered" id="rejected-dispatch-mgr"></table>
       </div>
 
-      <!-- Admin Section -->
-      <div id="admin-section" style="display: none;">
-        <h3>Admin User Management</h3>
+      <!-- Admin -->
+      <div id="admin-section" style="display:none;">
+        <h4>Admin User Management</h4>
+        <button class="btn btn-outline-primary mb-2" onclick="exportTableToExcel('admin-user-table')">Export Users</button>
         <table class="table table-bordered" id="admin-user-table">
           <thead>
-            <tr>
-              <th>Email</th>
-              <th>Password</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
+            <tr><th>Email</th><th>Password</th><th>Role</th><th>Actions</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -111,192 +105,172 @@
     </div>
   </div>
 
-  <!-- SCRIPT SECTION -->
-  <script>
-    $(document).ready(function () {
-      let users = JSON.parse(localStorage.getItem('users')) || [];
-      let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-      let dispatchRequests = JSON.parse(localStorage.getItem('dispatchRequests')) || [];
+<script>
+let users = JSON.parse(localStorage.getItem('users') || '[]');
+let inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+let dispatchRequests = JSON.parse(localStorage.getItem('dispatchRequests') || '[]');
 
-      function refreshInventoryTables() {
-        const invHTML = inventory.map(i =>
-          `<tr><td>${i.id}</td><td>${i.name}</td><td>${i.qty}</td><td>${i.lastUpdated || ''}</td></tr>`
-        ).join("");
-        const tableHeader = `<thead><tr><th>ID</th><th>Name</th><th>Quantity</th><th>Last Updated</th></tr></thead>`;
-        $('#inventory-table, #dispatcher-inventory, #manager-inventory').html(`${tableHeader}<tbody>${invHTML}</tbody>`);
-        const dropdownHTML = inventory.map(i =>
-          `<option value="${i.id}">${i.name} (${i.qty})</option>`).join("");
-        $('#dispatch-item').html(dropdownHTML);
-      }
+function saveAll() {
+  localStorage.setItem('users', JSON.stringify(users));
+  localStorage.setItem('inventory', JSON.stringify(inventory));
+  localStorage.setItem('dispatchRequests', JSON.stringify(dispatchRequests));
+}
 
-      function refreshDispatchTables() {
-        const pendingHTML = dispatchRequests.filter(d => d.status === 'Pending').map(d =>
-          `<tr><td><input type="checkbox" class="approve-select" value="${d.id}"></td><td>${d.item}</td><td>${d.qty}</td><td>${d.branch}</td><td>${d.person}</td><td>${d.date}</td></tr>`
-        ).join("");
-        const approvedHTML = dispatchRequests.filter(d => d.status === 'Approved').map(d =>
-          `<tr><td>${d.item}</td><td>${d.qty}</td><td>${d.branch}</td><td>${d.person}</td><td>${d.date}</td></tr>`
-        ).join("");
-        const rejectedHTML = dispatchRequests.filter(d => d.status === 'Rejected').map(d =>
-          `<tr><td>${d.item}</td><td>${d.qty}</td><td>${d.branch}</td><td>${d.person}</td><td>${d.date}</td></tr>`
-        ).join("");
+function exportTableToExcel(tableId) {
+  const table = document.getElementById(tableId);
+  const wb = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+  XLSX.writeFile(wb, `${tableId}.xlsx`);
+}
 
-        const pendingHeader = `<thead><tr><th>Select</th><th>Item</th><th>Quantity</th><th>Branch</th><th>Person</th><th>Date</th></tr></thead>`;
-        const otherHeader = `<thead><tr><th>Item</th><th>Quantity</th><th>Branch</th><th>Person</th><th>Date</th></tr></thead>`;
+$(document).ready(function () {
+  const refreshTables = () => {
+    const invHTML = inventory.map(i => `<tr><td>${i.id}</td><td>${i.name}</td><td>${i.qty}</td><td>${i.lastUpdated}</td></tr>`).join("");
+    const head = `<thead><tr><th>ID</th><th>Name</th><th>Qty</th><th>Last Updated</th></tr></thead>`;
+    $('#inventory-table, #dispatcher-inventory, #manager-inventory').html(`${head}<tbody>${invHTML}</tbody>`);
+    $('#dispatch-item').html(inventory.map(i => `<option value="${i.id}">${i.name} (${i.qty})</option>`).join(""));
+    
+    const pending = dispatchRequests.filter(r => r.status === 'Pending').map(r =>
+      `<tr><td><input type="checkbox" class="approve-select" value="${r.id}"></td><td>${r.item}</td><td>${r.qty}</td><td>${r.branch}</td><td>${r.person}</td><td>${r.date}</td></tr>`
+    ).join("");
+    $('#approve-table, #pending-dispatch').html(`<thead><tr><th>Select</th><th>Item</th><th>Qty</th><th>Branch</th><th>Person</th><th>Date</th></tr></thead><tbody>${pending}</tbody>`);
+    
+    const approved = dispatchRequests.filter(r => r.status === 'Approved').map(r =>
+      `<tr><td>${r.item}</td><td>${r.qty}</td><td>${r.branch}</td><td>${r.person}</td><td>${r.date}</td></tr>`
+    ).join("");
+    $('#approved-dispatch, #approved-dispatch-mgr').html(`<thead><tr><th>Item</th><th>Qty</th><th>Branch</th><th>Person</th><th>Date</th></tr></thead><tbody>${approved}</tbody>`);
+    
+    const rejected = dispatchRequests.filter(r => r.status === 'Rejected').map(r =>
+      `<tr><td>${r.item}</td><td>${r.qty}</td><td>${r.branch}</td><td>${r.person}</td><td>${r.date}</td></tr>`
+    ).join("");
+    $('#rejected-dispatch, #rejected-dispatch-mgr').html(`<thead><tr><th>Item</th><th>Qty</th><th>Branch</th><th>Person</th><th>Date</th></tr></thead><tbody>${rejected}</tbody>`);
+  };
 
-        $('#pending-dispatch, #approve-table').html(`${pendingHeader}<tbody>${pendingHTML}</tbody>`);
-        $('#approved-dispatch, #approved-dispatch-mgr').html(`${otherHeader}<tbody>${approvedHTML}</tbody>`);
-        $('#rejected-dispatch, #rejected-dispatch-mgr').html(`${otherHeader}<tbody>${rejectedHTML}</tbody>`);
-      }
+  $("input[name='authMode']").change(() => $('#signup-fields').toggle($('#signUp').is(':checked')));
 
-      function refreshAdminUserTable() {
-        const tbody = $('#admin-user-table tbody');
-        tbody.empty();
-        users.forEach((user, index) => {
-          const row = $(`
-            <tr>
-              <td><input type="email" class="form-control user-email" data-index="${index}" value="${user.username}"></td>
-              <td><input type="text" class="form-control user-password" data-index="${index}" value="${user.password}"></td>
-              <td>
-                <select class="form-select user-role" data-index="${index}">
-                  <option value="receive">Receive</option>
-                  <option value="dispatch">Dispatch</option>
-                  <option value="manager">Manager</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </td>
-              <td><button class="btn btn-danger btn-sm delete-user" data-index="${index}">Delete</button></td>
-            </tr>
-          `);
-          row.find('.user-role').val(user.role);
-          tbody.append(row);
-        });
-      }
+  $('#auth-btn').click(() => {
+    const username = $('#username').val(), password = $('#password').val();
+    const mode = $('input[name="authMode"]:checked').val();
+    if (!username || !password) return $('#auth-status').text('Fill all fields');
 
-      function loginUser(role) {
-        $('#auth-section').hide();
-        $('#main-section').show();
-        $('#receive-section, #dispatch-section, #manager-section, #admin-section').hide();
+    if (mode === 'Sign Up') {
+      const role = $('#role').val();
+      if (!role) return $('#auth-status').text('Select role');
+      if (users.find(u => u.username === username)) return $('#auth-status').text('Username exists');
+      if (role === 'admin' && users.some(u => u.role === 'admin')) return $('#auth-status').text('Only one admin allowed');
+      users.push({ username, password, role });
+      saveAll();
+      loginUser(role);
+    } else {
+      const user = users.find(u => u.username === username && u.password === password);
+      if (!user) return $('#auth-status').text('Invalid credentials');
+      loginUser(user.role);
+    }
+  });
 
-        if (role === 'receive') $('#receive-section').show();
-        if (role === 'dispatch') $('#dispatch-section').show();
-        if (role === 'manager') $('#manager-section').show();
-        if (role === 'admin') {
-          $('#admin-section').show();
-          refreshAdminUserTable();
-        }
+  function loginUser(role) {
+    $('#auth-section').hide(); $('#main-section').show();
+    $('#receive-section, #dispatch-section, #manager-section, #admin-section').hide();
+    if (role === 'receive') $('#receive-section').show();
+    if (role === 'dispatch') $('#dispatch-section').show();
+    if (role === 'manager') $('#manager-section').show();
+    if (role === 'admin') {
+      $('#admin-section').show(); refreshAdminUserTable();
+    }
+    refreshTables();
+  }
 
-        refreshInventoryTables();
-        refreshDispatchTables();
-      }
+  $('#recv-btn').click(() => {
+    const id = $('#recv-id').val(), name = $('#recv-name').val(), qty = parseInt($('#recv-qty').val());
+    if (!id || !name || qty <= 0) return;
+    const date = new Date().toLocaleString();
+    const item = inventory.find(i => i.id === id);
+    if (item) { item.qty += qty; item.lastUpdated = date; }
+    else inventory.push({ id, name, qty, lastUpdated: date });
+    saveAll(); refreshTables();
+  });
 
-      $("input[name='authMode']").change(() =>
-        $('#signup-fields').toggle($('#signUp').is(':checked'))
-      );
-
-      $('#auth-btn').click(function () {
-        const mode = $('input[name="authMode"]:checked').val();
-        const username = $('#username').val();
-        const password = $('#password').val();
-
-        if (!username || !password) return $('#auth-status').text('Fill all fields');
-
-        if (mode === 'Sign Up') {
-          const role = $('#role').val();
-          if (!role) return $('#auth-status').text('Select a role');
-          if (users.find(u => u.username === username)) return $('#auth-status').text('Username exists');
-          if (role === 'admin' && users.some(u => u.role === 'admin')) {
-            return $('#auth-status').text('Only one admin account is allowed');
-          }
-          users.push({ username, password, role });
-          localStorage.setItem('users', JSON.stringify(users));
-          loginUser(role);
-        } else {
-          const user = users.find(u => u.username === username && u.password === password);
-          if (!user) return $('#auth-status').text('Invalid credentials');
-          loginUser(user.role);
-        }
-      });
-
-      $('#logout-btn').click(() => {
-        $('#main-section').hide();
-        $('#auth-section').show();
-      });
-
-      $('#recv-btn').click(() => {
-        const id = $('#recv-id').val(), name = $('#recv-name').val(), qty = parseInt($('#recv-qty').val());
-        if (!id || !name || qty <= 0) return;
-        const date = new Date().toLocaleString();
-        const item = inventory.find(i => i.id === id);
-        if (item) {
-          item.qty += qty;
-          item.lastUpdated = date;
-        } else {
-          inventory.push({ id, name, qty, lastUpdated: date });
-        }
-        localStorage.setItem('inventory', JSON.stringify(inventory));
-        refreshInventoryTables();
-      });
-
-      $('#request-dispatch').click(() => {
-        const itemId = $('#dispatch-item').val();
-        const qty = parseInt($('#dispatch-qty').val());
-        const branch = $('#dispatch-branch').val();
-        const person = $('#dispatch-person').val();
-        const item = inventory.find(i => i.id === itemId);
-        if (!item || qty <= 0 || qty > item.qty || !branch || !person) return;
-        const date = new Date().toLocaleString();
-        dispatchRequests.push({
-          id: Date.now(),
-          item: item.name,
-          qty,
-          branch,
-          person,
-          status: 'Pending',
-          date
-        });
-        localStorage.setItem('dispatchRequests', JSON.stringify(dispatchRequests));
-        refreshDispatchTables();
-      });
-
-      $('#approve-btn').click(() => {
-        $('.approve-select:checked').each(function () {
-          const id = $(this).val();
-          const dispatch = dispatchRequests.find(d => d.id === parseInt(id));
-          dispatch.status = 'Approved';
-        });
-        localStorage.setItem('dispatchRequests', JSON.stringify(dispatchRequests));
-        refreshDispatchTables();
-      });
-
-      $('#reject-btn').click(() => {
-        $('.approve-select:checked').each(function () {
-          const id = $(this).val();
-          const dispatch = dispatchRequests.find(d => d.id === parseInt(id));
-          dispatch.status = 'Rejected';
-        });
-        localStorage.setItem('dispatchRequests', JSON.stringify(dispatchRequests));
-        refreshDispatchTables();
-      });
-
-      $('#save-users-btn').click(() => {
-        const tbody = $('#admin-user-table tbody');
-        tbody.find('tr').each(function () {
-          const index = $(this).find('.user-email').data('index');
-          users[index].username = $(this).find('.user-email').val();
-          users[index].password = $(this).find('.user-password').val();
-          users[index].role = $(this).find('.user-role').val();
-        });
-        localStorage.setItem('users', JSON.stringify(users));
-      });
-
-      $('#admin-user-table').on('click', '.delete-user', function () {
-        const index = $(this).data('index');
-        users.splice(index, 1);
-        localStorage.setItem('users', JSON.stringify(users));
-        refreshAdminUserTable();
-      });
+  $('#request-dispatch').click(() => {
+    const itemId = $('#dispatch-item').val(), qty = parseInt($('#dispatch-qty').val());
+    const branch = $('#dispatch-branch').val(), person = $('#dispatch-person').val();
+    const item = inventory.find(i => i.id === itemId);
+    if (!item || qty <= 0 || qty > item.qty || !branch || !person) return;
+    dispatchRequests.push({
+      id: Date.now(), item: item.name, qty, branch, person, status: 'Pending', date: new Date().toLocaleString()
     });
-  </script>
-</body>
+    saveAll(); refreshTables();
+  });
 
+  $('#approve-btn').click(() => {
+    $('.approve-select:checked').each(function () {
+      const id = $(this).val();
+      const req = dispatchRequests.find(r => r.id == id);
+      const invItem = inventory.find(i => i.name === req.item);
+      if (invItem && invItem.qty >= req.qty) {
+        req.status = 'Approved';
+        invItem.qty -= req.qty;
+        invItem.lastUpdated = new Date().toLocaleString();
+      }
+    });
+    saveAll(); refreshTables();
+  });
+
+  $('#reject-btn').click(() => {
+    $('.approve-select:checked').each(function () {
+      const id = $(this).val();
+      const req = dispatchRequests.find(r => r.id == id);
+      req.status = 'Rejected';
+    });
+    saveAll(); refreshTables();
+  });
+
+  $('#logout-btn').click(() => {
+    $('#main-section').hide(); $('#auth-section').show();
+  });
+
+  function refreshAdminUserTable() {
+    const tbody = $('#admin-user-table tbody').empty();
+    users.forEach((user, i) => {
+      tbody.append(`<tr>
+        <td><input type="email" class="form-control user-email" data-index="${i}" value="${user.username}"></td>
+        <td><input type="text" class="form-control user-password" data-index="${i}" value="${user.password}"></td>
+        <td><select class="form-select user-role" data-index="${i}">
+          <option value="receive">Receive</option>
+          <option value="dispatch">Dispatch</option>
+          <option value="manager">Manager</option>
+          <option value="admin">Admin</option>
+        </select></td>
+        <td><button class="btn btn-danger btn-sm delete-user" data-index="${i}">Delete</button></td>
+      </tr>`);
+      $(`.user-role[data-index="${i}"]`).val(user.role);
+    });
+  }
+
+  $('#admin-user-table').on('click', '.delete-user', function () {
+    const i = $(this).data('index');
+    users.splice(i, 1);
+    saveAll();
+    refreshAdminUserTable();
+  });
+
+  $('#save-users-btn').click(() => {
+    let updatedUsers = [], valid = true;
+    $('#admin-user-table tbody tr').each(function () {
+      const index = $(this).find('.user-email').data('index');
+      const email = $(this).find('.user-email').val().trim();
+      const pass = $(this).find('.user-password').val();
+      const role = $(this).find('.user-role').val();
+      if (!email || !pass || !role) valid = false;
+      updatedUsers.push({ username: email, password: pass, role });
+    });
+    const adminCount = updatedUsers.filter(u => u.role === 'admin').length;
+    if (!valid) return alert('All fields are required.');
+    if (adminCount > 1) return alert('Only one admin is allowed.');
+    users = updatedUsers;
+    saveAll();
+    alert('Saved.');
+  });
+
+});
+</script>
+</body>
 </html>
